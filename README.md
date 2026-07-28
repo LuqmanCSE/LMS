@@ -56,7 +56,7 @@ library-management-system/
 ```bash
 # 1. Clone the repo
 git clone https://github.com/Utsavpanchal0810/library-management-system.git
-cd stackroom-library
+cd library-management-system
 
 # 2. Create a virtual environment (recommended)
 python -m venv venv
