@@ -55,7 +55,7 @@ library-management-system/
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/<your-username>/stackroom-library.git
+git clone https://github.com/Utsavpanchal0810/library-management-system.git
 cd stackroom-library
 
 # 2. Create a virtual environment (recommended)
