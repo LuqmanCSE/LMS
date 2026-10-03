@@ -1,116 +1,83 @@
-# Stackroom — Mini Library Management System
+# Campus Library Management System
 
-A small library management system built with **Python (Flask)** and
-**SQLite**, featuring QR codes for books, an automatic fine calculator,
-live book availability tracking, and a dashboard.
+A small, demonstration-friendly Library Management System for an academic
+Software Engineering project. It uses Flask, SQLite, server-rendered HTML,
+and no database server or frontend build step.
 
-Built as a portfolio project — clean architecture (data layer / business
-logic / routes kept in separate files), no ORM magic, easy to read in
-one sitting.
+## What it does
 
-## Features
+- Session-protected administrator login
+- Dashboard with catalog, inventory, member, and loan counts
+- Book CRUD with ISBN, title, author, category, and copy-count validation
+- Search by title, author, ISBN, and category
+- Member CRUD with enrollment number and active/inactive status
+- Safe issuing: only an active member can borrow an available copy
+- Safe returns: one loan is closed and one copy is restored atomically
+- Complete current-loan and loan-history views
+- First-run sample data: four books, two active members, and one inactive
+  member
 
-- **Book catalog** — add, search, and remove books; each title tracks
-  total vs. available copies in real time.
-- **QR codes** — every book automatically gets a QR code (generated with
-  the `qrcode` library) encoding its ID, ISBN, and title. Print it for
-  the shelf or cover; scanning it with any phone reveals the book's
-  details instantly.
-- **Circulation** — issue a book to a member (14-day loan) and return
-  it later; available copies update automatically and can't go negative.
-- **Fine calculator** — configurable per-day overdue rate with a cap,
-  used automatically on return and also available as a standalone tool
-  to calculate a fine for any due/return date pair.
-- **Dashboard** — live counts of titles, copies available, active
-  loans, overdue books, fines collected vs. outstanding, and a
-  category breakdown.
-- **Member registry** and a full **transaction ledger** with fine
-  payment tracking.
+## Run it
 
-## Tech stack
+Requirements: Python 3.10+ and internet access once to install Flask.
 
-- Python 3 / Flask
-- SQLite (plain `sqlite3`, no ORM — easy to read and extend)
-- `qrcode` + `Pillow` for QR generation
-- Jinja2 templates, hand-written CSS (no frontend framework/build step)
+```powershell
+cd library_management_system
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+py -m pip install -r requirements.txt
+py app.py
+```
+
+If `py` is unavailable, replace it with `python`. Then open
+<http://127.0.0.1:5000>.
+
+Use the included demo administrator account:
+
+```text
+Username: admin
+Password: admin123
+```
+
+The password is stored as a Werkzeug password hash, not as plain text. The
+SQLite file (`library.db`) is created automatically beside the source files;
+it keeps data between runs. To reset only the demo data, stop the server and
+delete that file, then run the app again.
+
+## Run the tests
+
+```powershell
+python -m unittest discover -s tests -v
+```
+
+The test suite uses a temporary SQLite database. It checks duplicate ISBN
+protection, unavailable-book rejection, inactive-member rejection, and
+issue/return inventory consistency.
 
 ## Project structure
 
-```
-library-management-system/
-├── app.py             # Flask routes
-├── models.py           # data-access layer (books, members, transactions)
-├── database.py         # SQLite connection + schema
-├── fines.py            # fine calculation rules
-├── qr_utils.py         # QR code generation
-├── seed_data.py         # optional: loads sample data for a quick demo
-├── requirements.txt
-├── static/
-│   ├── css/style.css
-│   └── qrcodes/         # generated QR images land here
-└── templates/           # Jinja2 HTML templates
+```text
+library_management_system/
+├── app.py                 # Flask routes, login protection, application factory
+├── database.py            # SQLite schema, first-run seed data, transactions
+├── models.py              # Validation and book/member/circulation services
+├── templates/             # Jinja HTML pages
+├── static/css/style.css   # Responsive application styling
+├── tests/test_lms.py      # unittest service-level tests
+├── requirements.txt       # Flask only
+└── SOURCE_ATTRIBUTION.md  # Starter-project credit and adaptation notes
 ```
 
-## Getting started
+## Demonstration flow
 
-```bash
-# 1. Clone the repo
-git clone https://github.com/Utsavpanchal0810/library-management-system.git
-cd library-management-system
+1. Sign in with the demo account.
+2. Open **Books** and filter or add a catalog record.
+3. Open **Members** and notice that inactive members are clearly marked.
+4. Issue a book to an active member, then verify the dashboard count changes.
+5. Return the book and view the completed record in **Loan history**.
 
-# 2. Create a virtual environment (recommended)
-python -m venv venv
-source venv/bin/activate      # on Windows: venv\Scripts\activate
+## License and attribution
 
-# 3. Install dependencies
-pip install -r requirements.txt
-
-# 4. (Optional) load sample data so the dashboard isn't empty
-python seed_data.py
-
-# 5. Run the app
-python app.py
-```
-
-Then open **http://127.0.0.1:5000** in your browser.
-
-Running `app.py` also creates `library.db` automatically the first
-time, so step 4 is optional — you can start from a completely empty
-catalog if you'd rather add your own books.
-
-## How the fine calculator works
-
-Policy lives in one place, `fines.py`, so it's easy to tune:
-
-```python
-LOAN_PERIOD_DAYS = 14   # loan length
-GRACE_PERIOD_DAYS = 0   # days of grace before fines start
-FINE_PER_DAY = 5.0      # charged per day overdue
-MAX_FINE = 200.0        # fine is capped
-```
-
-`calculate_fine(due_date, return_date)` is used in two places: silently
-when a book is returned (to log the fine on the transaction), and in
-the standalone **Fine Calculator** page, which lets you check what the
-fine would be for any due date / return date combination.
-
-## How the QR codes work
-
-When a book is added, `qr_utils.generate_book_qr()` encodes a small
-JSON payload — `{book_id, isbn, title}` — into a PNG saved under
-`static/qrcodes/`. The image is shown on the book's "View QR" page and
-can be printed and stuck on the shelf or inside the cover; any generic
-QR scanner app can read it back for a fast lookup.
-
-## Possible next steps
-
-- Barcode/QR *scanning* (via a webcam) to issue/return books instead of
-  picking from a dropdown
-- Email/SMS reminders before a book becomes overdue
-- Multi-user login (librarian vs. member roles)
-- Export the ledger to CSV/PDF
-
-## License
-
-MIT — free to use for learning, portfolios, or as a starting point for
-something bigger.
+This academic adaptation is released under the [MIT License](LICENSE). The
+starter project is credited in [SOURCE_ATTRIBUTION.md](SOURCE_ATTRIBUTION.md).
+# LMS
